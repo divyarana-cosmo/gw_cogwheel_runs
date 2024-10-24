@@ -56,7 +56,8 @@ def run_pe(relno, runno):
     event_data.inject_signal(par_dic=par_dic, approximant='IMRPhenomXPHM')
     #print(par_dic, tgps, df['snr'][runno])
     # run the pe with IASprior
-    post = posterior.Posterior.from_event(event=event_data, mchirp_guess=gw_utils.m1m2_to_mchirp(par_dic['m1'], par_dic['m2']), approximant='IMRPhenomXPHM', prior_class='LVCPrior', prior_kwargs={'f_ref': f_ref}, ref_wf_finder_kwargs={'time_range': (-1.0,1.0)} )
+    post = posterior.Posterior.from_event(event=event_data, mchirp_guess=gw_utils.m1m2_to_mchirp(par_dic['m1'], par_dic['m2']), approximant='IMRPhenomXPHM', prior_class='IASPrior', prior_kwargs={'f_ref': f_ref}, ref_wf_finder_kwargs={'time_range': (-2.0,2.0)} )
+    #post = posterior.Posterior.from_event(event=event_data, mchirp_guess=gw_utils.m1m2_to_mchirp(par_dic['m1'], par_dic['m2']), approximant='IMRPhenomXPHM', prior_class='LVCPrior', prior_kwargs={'f_ref': f_ref}, ref_wf_finder_kwargs={'time_range': (-2.0,2.0)} )
     #post = posterior.Posterior.from_event(event=event_data, mchirp_guess=gw_utils.m1m2_to_mchirp(par_dic['m1'], par_dic['m2']), approximant='IMRPhenomXPHM', prior_class='LVCPrior', prior_kwargs={'f_ref': f_ref} )
     #post = posterior.Posterior.from_event(event=event_data, mchirp_guess=gw_utils.m1m2_to_mchirp(par_dic['m1'], par_dic['m2']), approximant='IMRPhenomXPHM', prior_class='LVCPrior', prior_kwargs={'f_ref': f_ref, 'd_luminosity_max': 10000} )
 
