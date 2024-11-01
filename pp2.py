@@ -22,11 +22,11 @@ def get_quant(truth, samples, weights=None):
     return value
 
 # then to the p-p plot 
-def get_pp_cal(quantarr, binsize=0.1):
+def get_pp_cal(quantarr, binsize=0.05):
     idx = quantarr//binsize
     uqidx, counts = np.unique(idx, return_counts=1)
     prob = np.cumsum(counts)/len(quantarr)
-    return uqidx*binsize, prob
+    return (uqidx + 0.5)*binsize, prob
 
 # need a code to read the data from all the feather filee and truth
 from glob import glob
@@ -34,7 +34,7 @@ relno = 10
 df = pd.read_csv('/home/divya.rana/github/gw_bilby_runs_cit/DataStore/o4sim_inputs/params_files_cogwheel/final_inj_params.txt_1y_run_no_kagra_%s'%relno, sep='\s+')
 print("read the truth file")
 plist = df.keys()
-plist = ['ra', 'dec', 'd_luminosity']
+plist = ['ra', 'dec', 'd_luminosity', 'iota']
 quantarr = {}
 for pp in plist:
     quantarr[pp] = np.array([])
@@ -63,7 +63,7 @@ for runno in range(Nevents):
 #make plots
 plt.subplot(2,2,1)
 for cnt,pp in enumerate(plist):
-    xx,yy = get_pp_cal(quantarr[pp], binsize=0.1)
+    xx,yy = get_pp_cal(quantarr[pp], binsize=0.05)
     plt.plot(xx,yy, label = pp)
 
 
