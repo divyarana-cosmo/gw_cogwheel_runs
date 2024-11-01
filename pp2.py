@@ -43,14 +43,14 @@ Nevents = len(df.values[:,0])
 
 for runno in range(Nevents):
     #SNR cut 
-    if df['snr'][runno]<10:
+    if df['snr'][runno]<12:
         continue
 
-    flist = glob('output/IASPrior/o4sim_relno_%d_run_%d/run_*/samples.feather'%(relno, runno))
+    flist = glob('output/LVCPrior_uni_dl/o4sim_relno_%d_run_%d/run_*/samples.feather'%(relno, runno))
     if len(flist)==0:
         continue
     else:
-        fil = 'output/IASPrior/o4sim_relno_%d_run_%d/run_%d/samples.feather'%(relno, runno, len(flist)-1)
+        fil = 'output/LVCPrior_uni_dl/o4sim_relno_%d_run_%d/run_%d/samples.feather'%(relno, runno, len(flist)-1)
     samples = pd.read_feather(fil)
     
     for pp in plist:
