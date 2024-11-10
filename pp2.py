@@ -22,54 +22,104 @@ def get_quant(truth, samples, weights=None):
     return value
 
 # then to the p-p plot 
-def get_pp_cal(quantarr, binsize=0.05):
-    idx = quantarr//binsize
-    uqidx, counts = np.unique(idx, return_counts=1)
-    prob = np.cumsum(counts)/len(quantarr)
-    return (uqidx + 0.5)*binsize, prob
+def get_pp_cal(quantarr):
+    xx = np.linspace(0,1,1001)
+    yy = 0.0*xx
+    for ii, pp in enumerate(xx):
+        yy[ii] = sum(quantarr<pp)/len(quantarr)
+    return xx,yy
 
 # need a code to read the data from all the feather filee and truth
-from glob import glob
-relno = 10
-df = pd.read_csv('/home/divya.rana/github/gw_bilby_runs_cit/DataStore/o4sim_inputs/params_files_cogwheel/final_inj_params.txt_1y_run_no_kagra_%s'%relno, sep='\s+')
-print("read the truth file")
-plist = df.keys()
-plist = ['ra', 'dec', 'd_luminosity', 'iota']
-quantarr = {}
-for pp in plist:
-    quantarr[pp] = np.array([])
 
-Nevents = len(df.values[:,0])
-
-for runno in range(Nevents):
-    #SNR cut 
-    if df['snr'][runno]<12:
-        continue
-
-    flist = glob('output/LVCPrior_uni_dl/o4sim_relno_%d_run_%d/run_*/samples.feather'%(relno, runno))
-    if len(flist)==0:
-        continue
-    else:
-        fil = 'output/LVCPrior_uni_dl/o4sim_relno_%d_run_%d/run_%d/samples.feather'%(relno, runno, len(flist)-1)
-    samples = pd.read_feather(fil)
-    
+def getquant(plist,relno=10):
+    from glob import glob
+    relno = relno
+    df = pd.read_csv('/home/divya.rana/github/gw_bilby_runs_cit/DataStore/o4sim_inputs/params_files_cogwheel/final_inj_params.txt_1y_run_no_kagra_%s'%relno, sep='\s+')
+    print("read the truth file")
+    #plist = df.keys()
+    plist = plist
+    quantarr = {}
     for pp in plist:
-        truth     = df[pp][runno]    
-        quantarr[pp] = np.append(quantarr[pp], get_quant(truth, samples[pp].values))
+        quantarr[pp] = np.array([])
+    
+    Nevents = len(df.values[:,0])
+    
+    quantarr['runno'] = np.array([])
+    
+    for runno in range(Nevents):
+        #SNR cut 
+        if df['snr'][runno]<12:
+            continue
+    
+        flist = glob('output/LVCPrior_uni_dl/o4sim_relno_%d_run_%d/run_*/samples.feather'%(relno, runno))
+        if len(flist)==0:
+            continue
+        else:
+            fil = 'output/LVCPrior_uni_dl/o4sim_relno_%d_run_%d/run_%d/samples.feather'%(relno, runno, len(flist)-1)
+        try:    
+            samples = pd.read_feather(fil)
+        except:
+            continue
+        
+        for pp in plist:
+            #print(pp)
+            truth     = df[pp][runno]    
+            quantarr[pp] = np.append(quantarr[pp], get_quant(truth, samples[pp].values))
+        
+        quantarr['runno']    =   np.append(quantarr['runno'],runno)    
+        print(runno)
+    
+    #Save the quantiles in a file
+    df = pd.DataFrame(quantarr)
+    df.to_csv('output/LVCPrior_uni_dl/quantiles_relno_%d.dat'%(relno), index=False)
+    return 0
 
-       
-    print(runno)
-
+#relno =0
+#for relno in range(11):
+#    plist = ['ra', 'dec', 'd_luminosity', 'iota']
+#    getquant(plist, relno=relno)
+## read from my file
+#quantarr = pd.read_csv('output/LVCPrior_uni_dl/quantiles_relno_%d.dat'%(relno))
+#
 #make plots
-plt.subplot(2,2,1)
+plist = ['ra', 'dec', 'd_luminosity', 'iota']
+bins = np.linspace(0,1,101)
 for cnt,pp in enumerate(plist):
-    xx,yy = get_pp_cal(quantarr[pp], binsize=0.05)
-    plt.plot(xx,yy, label = pp)
+    plt.subplot(2,2,cnt+1)
+    for relno in range(11):
+        quantarr = pd.read_csv('output/LVCPrior_uni_dl/quantiles_relno_%d.dat'%(relno))
+        xx,yy = get_pp_cal(quantarr[pp])
+        plt.plot(xx,yy, label = pp)
 
+    plt.plot(xx,xx,'--k')
+    plt.xlim(0,1.0)
+    plt.ylim(0,1.0)
+    plt.title(pp)    
+    plt.xlabel(r'Credible interval')
+    plt.ylabel(r'Fraction of injections')
 
-plt.plot(xx,xx,'--k')
-plt.xlabel(r'$p_{\rm exp}$')
-plt.ylabel(r'$p_{\rm obs}$')
-plt.legend()
+plt.tight_layout()
 plt.savefig('test.png', dpi=300, bbox_inches='tight')
+
+#plt.hist(quantarr[pp], histtype='step', bins=bins)
+#plt.title(pp)    
+#plt.legend()
+#plt.xlabel(r'Credible interval')
+#plt.legend(fontsize='small')
+plt.savefig('test.png', dpi=300, bbox_inches='tight')
+#
+#
+#plt.clf()
+#
+#for cnt,pp in enumerate(plist):
+#    xx,yy = get_pp_cal(quantarr[pp])
+#    plt.plot(xx,yy, label = pp)
+#
+#plt.plot(xx,xx,'--k')
+#plt.xlim(0,1.0)
+#plt.ylim(0,1.0)
+#plt.xlabel(r'Credible interval')
+#plt.ylabel(r'Fraction of injections in credible interval')
+#plt.legend(fontsize='small')
+#plt.savefig('test1.png', dpi=300, bbox_inches='tight')
 
