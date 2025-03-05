@@ -4,7 +4,7 @@ import bilby
 import json
 import pandas as pd
 from scipy.interpolate import InterpolatedUnivariateSpline as ius
-
+plt.rcParams.update({"text.usetex": False})
 # get the cumulative distribution from the weights & samples and put the spline
 def samp2cumsum_spl(samples, weights=None):
     if type(weights)==type(None):
@@ -75,7 +75,7 @@ def getquant(plist,relno=10):
     return 0
 
 #relno =0
-#for relno in range(11):
+#for relno in range(19,20):
 #    plist = ['ra', 'dec', 'd_luminosity', 'iota']
 #    getquant(plist, relno=relno)
 ## read from my file
@@ -83,30 +83,33 @@ def getquant(plist,relno=10):
 #
 #make plots
 plist = ['ra', 'dec', 'd_luminosity', 'iota']
+llist = [r'$ra$', r'$dec$', r'$d_{\rm lum}$', r'$\iota$']
 bins = np.linspace(0,1,101)
-for cnt,pp in enumerate(plist):
-    plt.subplot(2,2,cnt+1)
-    for relno in range(11):
+for cnt,pp in enumerate(plist[:-1]):
+    plt.subplot(3,3,cnt+1)
+    for relno in range(20):
         quantarr = pd.read_csv('output/LVCPrior_uni_dl/quantiles_relno_%d.dat'%(relno))
         xx,yy = get_pp_cal(quantarr[pp])
-        plt.plot(xx,yy, label = pp)
-
+        plt.plot(xx,yy)
+    print(pp)
     plt.plot(xx,xx,'--k')
     plt.xlim(0,1.0)
     plt.ylim(0,1.0)
-    plt.title(pp)    
+    plt.title(llist[cnt])    
     plt.xlabel(r'Credible interval')
-    plt.ylabel(r'Fraction of injections')
+    if cnt==0:
+        plt.ylabel(r'Fraction of injections')
 
 plt.tight_layout()
-plt.savefig('test.png', dpi=300, bbox_inches='tight')
+plt.savefig('pp_plots.png', dpi=300)
+#plt.savefig('test.png', dpi=300, bbox_inches='tight')
 
 #plt.hist(quantarr[pp], histtype='step', bins=bins)
 #plt.title(pp)    
 #plt.legend()
 #plt.xlabel(r'Credible interval')
 #plt.legend(fontsize='small')
-plt.savefig('test.png', dpi=300, bbox_inches='tight')
+#plt.savefig('test.png', dpi=300, bbox_inches='tight')
 #
 #
 #plt.clf()
